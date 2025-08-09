@@ -1,8 +1,8 @@
 // ====== CONFIG ======
 const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRGncMkuJIgCWEwgnBNOA3jCdCt4uz3ENDfW1dpC8Jmj_kbfompeOHyipVojo1tnV56WXCnER-Smopf/pub?output=csv";
-const PLACEHOLDER_IMG = "img/products/placeholder.jpg"; // add this image to your repo if you want
+const PLACEHOLDER_IMG = "img/products/placeholder.jpg";
 
-// ====== SMALL HELPERS ======
+// ====== HELPERS ======
 const $ = (sel) => document.querySelector(sel);
 
 function parseCSV(text) {
@@ -36,11 +36,10 @@ function normBool(v) {
   if (['true', '1', 'sí', 'si'].includes(s)) return true;
   if (['false', '0', 'no'].includes(s)) return false;
   if (['hide', 'ocultar'].includes(s)) return 'hide';
-  return undefined; // not specified
+  return undefined;
 }
 
 function toNumberAR(v) {
-  // keep digits, commas, dots, minus; convert comma to dot
   const s = (v ?? '').toString().replace(/[^\d.,-]/g, '').replace(',', '.');
   const n = Number(s);
   return Number.isFinite(n) ? n : 0;
@@ -48,6 +47,16 @@ function toNumberAR(v) {
 
 function formatARS(n) {
   return n.toLocaleString('es-AR', { maximumFractionDigits: 0 });
+}
+
+// Consistent slug maker (accents → plain, spaces → - , lowercase)
+function slugify(str = '') {
+  return str
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove diacritics
+    .replace(/ñ/gi, 'n')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-+|-+$)/g, '');
 }
 
 function getQueryParam(name) {
@@ -62,7 +71,6 @@ async function loadProducts() {
   const rows = parseCSV(text);
   const objs = toObjects(rows);
 
-  // Map Spanish headers -> normalized fields
   return objs.map(p => {
     const name  = p.Producto || p.name || '';
     const price = toNumberAR(p.Precio_Venta || p.price);
@@ -71,18 +79,19 @@ async function loadProducts() {
     const link  = p.link || '#';
     const cat   = (p.category || p.categoria || '').toLowerCase();
     const tags  = p.tags || '';
+    const desc  = p.Descripcion || p.description || '';
     const activeRaw = p.Active ?? '';
-    return { name, price, stock, img, link, category: cat, tags, activeRaw };
+    const slug = slugify(name);  // <-- auto slug
+    return { name, price, stock, img, link, category: cat, tags, desc, activeRaw, slug };
   });
 }
 
 // ====== FILTER, RENDER, WIRE UI ======
 function visibleFilter(item) {
   const a = normBool(item.activeRaw);
-  if (a === 'hide') return false;     // manual hide wins
+  if (a === 'hide') return false;
   if (a === true)  return item.stock > 0;
   if (a === false) return false;
-  // if Active not set, auto: only show if stock > 0
   return item.stock > 0;
 }
 
@@ -100,14 +109,14 @@ function render(list) {
     const card = document.createElement('article');
     card.className = 'product-card';
     card.innerHTML = `
-      <img src="${p.img}" alt="${p.name}">
+      <img src="${p.img}" alt="${p.name}" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
       <div class="info">
         <span>${p.name}</span>
         <span class="badge">$${formatARS(p.price)}</span>
       </div>
       <div class="info">
         <span style="opacity:.6">${(p.category || '').toUpperCase()}</span>
-        <a class="btn-mini" href="${p.link}" target="_blank" rel="noopener">Ver</a>
+        <a class="btn-mini" href="product.html?slug=${encodeURIComponent(p.slug)}">Ver</a>
       </div>
     `;
     grid.appendChild(card);
@@ -141,16 +150,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     const all = await loadProducts();
 
-    // Pre-filter by URL ?cat=...
     const qpCat = (getQueryParam('cat') || '').toLowerCase();
-    if (qpCat && $('#cat')) {
-      $('#cat').value = qpCat;
-    }
+    if (qpCat && $('#cat')) $('#cat').value = qpCat;
 
-    // Initial render
     applyFilters(all);
-
-    // Wire filters
     if ($('#q'))  $('#q').addEventListener('input', debounce(() => applyFilters(all), 200));
     if ($('#cat')) $('#cat').addEventListener('change', () => applyFilters(all));
   } catch (e) {

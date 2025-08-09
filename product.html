@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Producto • Adelie Glam</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <svg class="mini-logo" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M10 2a1 1 0 00-.894.553L7.382 6H3a1 1 0 00-.832 1.554l3 5A1 1 0 006 12h8a1 1 0 00.832-1.554l-3-5A1 1 0 0013 6h-4.382l-1.724-3.447A1 1 0 0010 2z" />
+        <path d="M3 14a1 1 0 100 2h14a1 1 0 100-2H3z" />
+      </svg>
+      <span class="logo-text">Adelie</span>
+    </div>
+  </header>
+
+  <nav class="mainnav">
+    <ul>
+      <li><a href="index.html">INICIO</a></li>
+      <li><a class="active" href="tienda.html">TIENDA</a></li>
+    </ul>
+  </nav>
+
+  <main class="grid" id="product-details" style="max-width:1000px;margin:1rem auto;padding:0 1rem"></main>
+
+  <footer class="footer">© 2025 Adelie Glam — Hecho con ♥ en Buenos Aires</footer>
+
+  <script>
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRGncMkuJIgCWEwgnBNOA3jCdCt4uz3ENDfW1dpC8Jmj_kbfompeOHyipVojo1tnV56WXCnER-Smopf/pub?output=csv";
+    const PLACEHOLDER_IMG = "img/products/placeholder.jpg";
+
+    function slugify(str = '') {
+      return str
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/ñ/gi, 'n')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-+|-+$)/g, '');
+    }
+
+    function parseCSV(text) {
+      const rows = [];
+      let row = [], cell = '', inQuotes = false;
+      for (let i = 0; i < text.length; i++) {
+        const c = text[i], n = text[i + 1];
+        if (c === '"' && inQuotes && n === '"') { cell += '"'; i++; continue; }
+        if (c === '"') { inQuotes = !inQuotes; continue; }
+        if (c === ',' && !inQuotes) { row.push(cell); cell = ''; continue; }
+        if ((c === '\n' || c === '\r') && !inQuotes) {
+          if (cell.length || row.length) { row.push(cell); rows.push(row); row = []; cell = ''; }
+          continue;
+        }
+        cell += c;
+      }
+      if (cell.length || row.length) { row.push(cell); rows.push(row); }
+      return rows;
+    }
+
+    function toObjects(rows) {
+      if (!rows.length) return [];
+      const header = rows[0].map(h => h.trim());
+      return rows.slice(1)
+        .filter(r => r.some(v => (v ?? '').toString().trim().length))
+        .map(r => Object.fromEntries(header.map((h, i) => [h, (r[i] ?? '').toString().trim()])));
+    }
+
+    function toNumberAR(v) {
+      const s = (v ?? '').toString().replace(/[^\d.,-]/g, '').replace(',', '.');
+      const n = Number(s);
+      return Number.isFinite(n) ? n : 0;
+    }
+    function formatARS(n) {
+      return n.toLocaleString('es-AR', { maximumFractionDigits: 0 });
+    }
+
+    async function loadAll() {
+      const res = await fetch(CSV_URL + "&cb=" + Date.now(), { cache: "no-store" });
+      const text = await res.text();
+      const rows = parseCSV(text);
+      const objs = toObjects(rows);
+      return objs.map(p => ({
+        name: p.Producto || p.name || '',
+        price: toNumberAR(p.Precio_Venta || p.price),
+        stock: parseInt(p.Cantidad || p.stock || '0', 10) || 0,
+        img: p.img || p.ImageURL || PLACEHOLDER_IMG,
+        category: (p.category || p.categoria || '').toLowerCase(),
+        tags: p.tags || '',
+        desc: p.Descripcion || p.description || '',
+        slug: slugify(p.Producto || p.name || '')
+      }));
+    }
+
+    (async () => {
+      const params = new URLSearchParams(location.search);
+      const wanted = (params.get('slug') || '').toLowerCase();
+      const all = await loadAll();
+      const p = all.find(x => x.slug === wanted);
+
+      const box = document.getElementById('product-details');
+      if (!p) {
+        box.innerHTML = `<p style="grid-column:1/-1;text-align:center">Producto no encontrado. <a href="tienda.html">Volver a Tienda</a></p>`;
+        return;
+      }
+
+      document.title = `${p.name} • Adelie Glam`;
+
+      box.innerHTML = `
+        <article class="product-card" style="grid-column:1/-1; display:grid; grid-template-columns: 1fr 1fr; gap:1rem; align-items:start;">
+          <img src="${p.img}" alt="${p.name}" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px">
+          <div>
+            <h1 style="margin:0 0 .4rem">${p.name}</h1>
+            <p style="opacity:.7;margin:.25rem 0">${(p.category||'').toUpperCase()}</p>
+            <p class="badge" style="display:inline-block;margin:.5rem 0">$${formatARS(p.price)}</p>
+            ${p.desc ? `<p style="margin:1rem 0 1.25rem">${p.desc}</p>` : ''}
+            <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+              <a href="tienda.html" class="btn-mini">Volver a Tienda</a>
+              <a href="#" class="btn-mini">Consultar</a>
+            </div>
+          </div>
+        </article>
+      `;
+
+      // Mobile layout tweak
+      if (window.matchMedia("(max-width: 720px)").matches) {
+        const card = box.querySelector('.product-card');
+        card.style.gridTemplateColumns = '1fr';
+      }
+    })();
+  </script>
+</body>
+</html>

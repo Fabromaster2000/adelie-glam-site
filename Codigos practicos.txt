@@ -1,0 +1,15 @@
+SUBIR / ACTUALIZAR FOTOS
+
+Heck yes—you can bulk it. Here’s the clean, scalable way:
+
+1) Put all images in your repo
+Place them in img/products/
+
+You can drag-and-drop multiple files at once in GitHub (into that folder) or do:
+
+bash
+Copy
+git add img/products/*
+git commit -m "Add product images"
+git push
+Prefer lowercase names, hyphens, no spaces. WebP/JPG ~1000px wide is perfect.
