@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tienda • Adelie Glam</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="brand">
+      <svg class="mini-logo" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M10 2a1 1 0 00-.894.553L7.382 6H3a1 1 0 00-.832 1.554l3 5A1 1 0 006 12h8a1 1 0 00.832-1.554l-3-5A1 1 0 0013 6h-4.382l-1.724-3.447A1 1 0 0010 2z" />
+        <path d="M3 14a1 1 0 100 2h14a1 1 0 100-2H3z" />
+      </svg>
+      <span class="logo-text">Adelie</span>
+    </div>
+  </header>
+
+  <!-- Nav -->
+  <nav class="mainnav">
+    <ul>
+      <li><a href="index.html">INICIO</a></li>
+      <li><a class="active" href="tienda.html">TIENDA</a></li>
+      <li><a href="accesorios.html">ACCESORIOS</a></li>
+      <li><a href="infantil.html">INFANTIL</a></li>
+      <li><a href="mochilas.html">MOCHILAS</a></li>
+      <li><a href="regalables.html">REGALABLES</a></li>
+      <li><a href="charms.html">CHARMS</a></li>
+    </ul>
+  </nav>
+
+  <!-- Page header -->
+  <section class="page-hero">
+    <h1>Tienda</h1>
+    <p>Buscá por nombre, categoría o tag ✨</p>
+    <div style="max-width:1200px;margin:1rem auto;padding:0 1rem;display:flex;gap:.75rem;flex-wrap:wrap">
+      <input id="q" type="search" placeholder="Buscar…" style="flex:1;min-width:220px;padding:.7rem 1rem;border-radius:10px;border:1px solid #e4c8d2">
+      <select id="cat" style="padding:.7rem 1rem;border-radius:10px;border:1px solid #e4c8d2">
+        <option value="">Todas las categorías</option>
+        <option value="accesorios">Accesorios</option>
+        <option value="infantil">Infantil</option>
+        <option value="mochilas">Mochilas</option>
+        <option value="regalables">Regalables</option>
+        <option value="charms">Charms</option>
+        <option value="rebajas">Rebajas</option>
+      </select>
+    </div>
+  </section>
+
+  <!-- Products grid -->
+  <main class="grid" id="grid"></main>
+
+  <footer class="footer">© 2025 Adelie Glam — Hecho con ♥ en Buenos Aires</footer>
+
+  <!-- WhatsApp FAB (you already added this) -->
+  <script defer src="whatsapp.js"></script>
+
+  <!-- Products loader -->
+  <script defer src="products.js"></script>
+</body>
+</html>
