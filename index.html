@@ -8,20 +8,26 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
+<script defer src="whatsapp.js"></script>
+
 <body>
 
   <!-- Top brand bar -->
   <header class="topbar">
     <div class="brand">
-      <!-- Tiny logo placeholder -->
-      <svg class="mini-logo" viewBox="0 0 64 64" aria-hidden="true">
-        <circle cx="32" cy="32" r="30" fill="none" stroke="#B54A64" stroke-width="2"/>
-        <circle cx="26" cy="26" r="4" fill="#B54A64"/>
-        <circle cx="38" cy="26" r="4" fill="#B54A64"/>
-        <path d="M22 40c6 5 14 5 20 0" stroke="#B54A64" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <!-- Replaced smiley with crown icon -->
+      <svg class="mini-logo" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd" clip-rule="evenodd"
+              d="M10 2a1 1 0 00-.894.553L7.382 6H3a1 1 0 00-.832 
+                1.554l3 5A1 1 0 006 12h8a1 1 0 00.832-1.554l-3-5A1 
+                1 0 0013 6h-4.382l-1.724-3.447A1 1 0 0010 2z" />
+        <path d="M3 14a1 1 0 100 2h14a1 1 0 100-2H3z" />
       </svg>
       <span class="logo-text">Adelie</span>
     </div>
+    <!-- … rest of topbar … -->
+  </header>
+
     <div class="socials">
       <a href="#" aria-label="Email" title="Email">
         <svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 7l8 6 8-6" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
@@ -35,57 +41,45 @@
   <!-- Main nav -->
   <nav class="mainnav">
     <ul>
-      <li><a href="#">REBAJAS</a></li>
-      <li><a href="#">ACCESORIOS</a></li>
-      <li><a href="#">INFANTIL</a></li>
-      <li><a href="#">MOCHILAS</a></li>
-      <li><a href="#">REGALABLES</a></li>
-      <li><a href="#">CHARMS</a></li>
+      <li><a href="rebajas.html">REBAJAS</a></li>
+      <li><a href="accesorios.html">ACCESORIOS</a></li>
+      <li><a href="infantil.html">INFANTIL</a></li>
+      <li><a href="mochilas.html">MOCHILAS</a></li>
+      <li><a href="regalables.html">REGALABLES</a></li>
+      <li><a href="charms.html">CHARMS</a></li>
     </ul>
   </nav>
 
   <!-- Two promo tiles -->
   <section class="promos">
-    <!-- LEFT PROMO -->
     <article class="promo">
-      <img src="img/promo-stitch.jpg" alt="Mochila de Stitch rosada y anteojos de regalo">
-      <div class="promo-copy">
-        <h2>LEVÁ LA MOCHILA<br>DE STITCH</h2>
-        <p>¡Llevás los anteojos de regalo!</p>
-        <a class="btn" href="#">VER TIENDA</a>
-      </div>
+      <a href="mochilas.html"></a><img src="img/promo-stitch.jpg" alt="Mochila de Stitch rosada">
     </article>
-
-    <!-- RIGHT PROMO -->
     <article class="promo">
-      <img src="img/promo-charms.jpg" alt="Niña armando charms">
-      <div class="promo-copy right">
-        <h2>2×1 EN CHARMS</h2>
-        <p>¡Arma el tuyo!</p>
-        <a class="btn dark" href="#">VER TIENDA</a>
-      </div>
+      <a href="charms.html"></a><img src="img/promo-charms.jpg" alt="Niña armando charms">
     </article>
   </section>
 
+
   <!-- Bottom icon bar -->
   <section class="iconbar">
-    <a href="#" class="iconlink">
+    <a href="accesorios.html" class="iconlink">
       <svg viewBox="0 0 24 24"><path d="M12 3l5 7H7l5-7zM7 14h10l-5 7-5-7z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
       <span>Accesorios</span>
     </a>
-    <a href="#" class="iconlink">
+    <a href="infantil.html" class="iconlink">
       <svg viewBox="0 0 24 24"><path d="M4 18c2-3 4-5 8-5s6 2 8 5" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="8" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
       <span>Infantil</span>
     </a>
-    <a href="#" class="iconlink">
+    <a href="mochilas.html" class="iconlink">
       <svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5 9h14" stroke="currentColor" stroke-width="1.5"/></svg>
       <span>Mochilas</span>
     </a>
-    <a href="#" class="iconlink">
+    <a href="regalables.html" class="iconlink">
       <svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 7V5a4 4 0 0 1 8 0v2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
       <span>Regalables</span>
     </a>
-    <a href="#" class="iconlink">
+    <a href="charms.html" class="iconlink">
       <svg viewBox="0 0 24 24"><path d="M6 6h12l1 12H5L6 6z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M9 6a3 3 0 1 1 6 0" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
       <span>Charms</span>
     </a>
