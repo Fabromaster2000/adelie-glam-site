@@ -49,10 +49,10 @@ function formatARS(n) {
   return n.toLocaleString('es-AR', { maximumFractionDigits: 0 });
 }
 
-// Consistent slug maker (accents → plain, spaces → - , lowercase)
+// Slug maker
 function slugify(str = '') {
   return str
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove diacritics
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .replace(/ñ/gi, 'n')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
@@ -81,12 +81,12 @@ async function loadProducts() {
     const tags  = p.tags || '';
     const desc  = p.Descripcion || p.description || '';
     const activeRaw = p.Active ?? '';
-    const slug = slugify(name);  // <-- auto slug
+    const slug = slugify(name);
     return { name, price, stock, img, link, category: cat, tags, desc, activeRaw, slug };
   });
 }
 
-// ====== FILTER, RENDER, WIRE UI ======
+// ====== FILTERS + RENDER ======
 function visibleFilter(item) {
   const a = normBool(item.activeRaw);
   if (a === 'hide') return false;
@@ -116,7 +116,14 @@ function render(list) {
       </div>
       <div class="info">
         <span style="opacity:.6">${(p.category || '').toUpperCase()}</span>
-        <a class="btn-mini" href="product.html?slug=${encodeURIComponent(p.slug)}">Ver</a>
+        <div style="display:flex; gap:.5rem;">
+          <a class="btn-mini" href="product.html?slug=${encodeURIComponent(p.slug)}">Ver</a>
+          <button class="btn-mini add-to-cart"
+            data-slug="${p.slug}"
+            data-name="${p.name.replace(/"/g,'&quot;')}"
+            data-price="${p.price}"
+            data-img="${p.img.replace(/"/g,'&quot;')}">Agregar</button>
+        </div>
       </div>
     `;
     grid.appendChild(card);
@@ -128,34 +135,51 @@ function applyFilters(all) {
   const cat = ($('#cat')?.value || '').toLowerCase().trim();
 
   let out = all.filter(visibleFilter);
-
   if (cat) out = out.filter(p => (p.category || '').toLowerCase() === cat);
-
   if (q) {
     out = out.filter(p => {
       const haystack = `${p.name} ${p.category} ${p.tags}`.toLowerCase();
       return haystack.includes(q);
     });
   }
-
   render(out);
 }
 
+// Debounce utility
 function debounce(fn, ms = 250) {
   let t;
   return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
 }
 
+// ====== BOOT ======
 document.addEventListener('DOMContentLoaded', async () => {
   try {
     const all = await loadProducts();
 
+    // Preselect category via ?cat=
     const qpCat = (getQueryParam('cat') || '').toLowerCase();
     if (qpCat && $('#cat')) $('#cat').value = qpCat;
 
+    // Initial render + wire filters
     applyFilters(all);
     if ($('#q'))  $('#q').addEventListener('input', debounce(() => applyFilters(all), 200));
     if ($('#cat')) $('#cat').addEventListener('change', () => applyFilters(all));
+
+    // ONE event delegation on the grid for "Agregar"
+    const container = document.getElementById('grid') || document.getElementById('product-list');
+    container?.addEventListener('click', (e) => {
+      const btn = e.target.closest('.add-to-cart');
+      if (!btn) return;
+      const item = {
+        slug: btn.dataset.slug,
+        name: btn.dataset.name,
+        price: Number(btn.dataset.price || 0),
+        img: btn.dataset.img
+      };
+      window.AdelieCart?.addItem(item, 1);
+      window.AdelieCart?.openCart();
+    });
+
   } catch (e) {
     console.error(e);
     const grid = document.getElementById('grid') || document.getElementById('product-list');

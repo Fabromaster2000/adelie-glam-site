@@ -38,6 +38,26 @@
       <li><a href="charms.html">CHARMS</a></li>
     </ul>
   </nav>
+<!-- Cart button in the topbar -->
+<a id="cart-btn" class="cart-fab" aria-label="Carrito">
+  🛒 <span id="cart-count">0</span>
+</a>
+
+<!-- Cart drawer -->
+<aside id="cart-drawer" class="cart-drawer" aria-hidden="true">
+  <div class="cart-head">
+    <strong>Tu carrito</strong>
+    <button id="cart-close" aria-label="Cerrar">×</button>
+  </div>
+  <div id="cart-items" class="cart-items"></div>
+  <div class="cart-foot">
+    <div class="cart-total">Total: <span id="cart-total">$0</span></div>
+    <div class="cart-actions">
+      <button id="cart-clear" class="btn-mini">Vaciar</button>
+      <a id="cart-checkout" class="btn-mini" target="_blank" rel="noopener">Checkout por WhatsApp</a>
+    </div>
+  </div>
+</aside>
 
   <!-- page header -->
   <section class="page-hero">
