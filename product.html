@@ -8,7 +8,7 @@
 </head>
 <body>
 
-  <!-- HEADER (brand + socials, both top-left & clickable brand) -->
+  <!-- HEADER -->
   <header class="topbar">
     <a href="index.html" class="brand">
       <svg class="mini-logo" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -56,129 +56,143 @@
     </div>
   </aside>
 
-  <!-- PRODUCT CONTENT -->
+  <!-- PAGE CONTENT -->
   <main class="grid" id="product-details" style="max-width:1000px;margin:1rem auto;padding:0 1rem"></main>
 
   <footer class="footer">© 2025 Adelie Glam — Hecho con ♥ en Buenos Aires</footer>
 
-  <!-- Load cart FIRST (non-defer so AdelieCart exists for inline script) -->
-  <script src="cart.js?v=4"></script>
-  <!-- Optional helpers -->
+  <!-- Load cart FIRST so AdelieCart exists -->
+  <script src="cart.js?v=5"></script>
   <script defer src="whatsapp.js?v=2"></script>
 
-  <!-- Page script: loads CSV, renders product, wires Add + WA CTA -->
+  <!-- Inline page script -->
   <script>
-    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRGncMkuJIgCWEwgnBNOA3jCdCt4uz3ENDfW1dpC8Jmj_kbfompeOHyipVojo1tnV56WXCnER-Smopf/pub?output=csv";
-    const PLACEHOLDER_IMG = "img/products/placeholder.jpg";
-    const PHONE = "5491159498241"; // your WhatsApp number
-    const addBtnHTML = `<a href="#" id="add-one" class="btn-mini">Agregar al carrito</a>`;
-
-    // ---- helpers ----
-    function slugify(str = '') {
-      return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-        .replace(/ñ/gi, 'n').toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-').replace(/(^-+|-+$)/g, '');
-    }
-    function parseCSV(text) {
-      const rows = []; let row = [], cell = '', inQuotes = false;
-      for (let i = 0; i < text.length; i++) {
-        const c = text[i], n = text[i + 1];
-        if (c === '"' && inQuotes && n === '"') { cell += '"'; i++; continue; }
-        if (c === '"') { inQuotes = !inQuotes; continue; }
-        if (c === ',' && !inQuotes) { row.push(cell); cell = ''; continue; }
-        if ((c === '\n' || c === '\r') && !inQuotes) {
-          if (cell.length || row.length) { row.push(cell); rows.push(row); row = []; cell = ''; }
-          continue;
-        }
-        cell += c;
-      }
-      if (cell.length || row.length) { row.push(cell); rows.push(row); }
-      return rows;
-    }
-    function toObjects(rows) {
-      if (!rows.length) return [];
-      const header = rows[0].map(h => h.trim());
-      return rows.slice(1)
-        .filter(r => r.some(v => (v ?? '').toString().trim().length))
-        .map(r => Object.fromEntries(header.map((h,i)=>[h,(r[i] ?? '').toString().trim()])));
-    }
-    function toNumberAR(v) {
-      const s = (v ?? '').toString().replace(/[^\d.,-]/g,'').replace(',', '.');
-      const n = Number(s); return Number.isFinite(n) ? n : 0;
-    }
-    function formatARS(n) { return n.toLocaleString('es-AR', { maximumFractionDigits: 0 }); }
-
-    async function loadAll() {
-      const res = await fetch(CSV_URL + "&cb=" + Date.now(), { cache: "no-store" });
-      const text = await res.text();
-      const rows = parseCSV(text);
-      const objs = toObjects(rows);
-      return objs.map(p => ({
-        name: p.Producto || p.name || '',
-        price: toNumberAR(p.Precio_Venta || p.price),
-        stock: parseInt(p.Cantidad || p.stock || '0', 10) || 0,
-        img: p.img || p.ImageURL || PLACEHOLDER_IMG,
-        category: (p.category || p.categoria || '').toLowerCase(),
-        tags: p.tags || '',
-        desc: p.Descripcion || p.description || '',
-        slug: slugify(p.Producto || p.name || '')
-      }));
-    }
-
     (async () => {
-      const params = new URLSearchParams(location.search);
-      const wanted = (params.get('slug') || '').toLowerCase();
-      const all = await loadAll();
-      const p = all.find(x => x.slug === wanted);
+      try {
+        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRGncMkuJIgCWEwgnBNOA3jCdCt4uz3ENDfW1dpC8Jmj_kbfompeOHyipVojo1tnV56WXCnER-Smopf/pub?output=csv";
+        const PLACEHOLDER_IMG = "img/products/placeholder.jpg";
+        const PHONE = "5491159498241";
+        const addBtnHTML = `<a href="#" id="add-one" class="btn-mini">Agregar al carrito</a>`;
 
-      const box = document.getElementById('product-details');
-      if (!p) {
-        box.innerHTML = `<p style="grid-column:1/-1;text-align:center">Producto no encontrado. <a href="tienda.html">Volver a Tienda</a></p>`;
-        return;
-      }
+        const log = (...a) => console.log("[product]", ...a);
 
-      document.title = `${p.name} • Adelie Glam`;
+        function slugify(str = '') {
+          return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/ñ/gi, 'n').toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-').replace(/(^-+|-+$)/g, '');
+        }
+        function parseCSV(text) {
+          const rows = []; let row = [], cell = '', inQuotes = false;
+          for (let i = 0; i < text.length; i++) {
+            const c = text[i], n = text[i + 1];
+            if (c === '"' && inQuotes && n === '"') { cell += '"'; i++; continue; }
+            if (c === '"') { inQuotes = !inQuotes; continue; }
+            if (c === ',' && !inQuotes) { row.push(cell); cell = ''; continue; }
+            if ((c === '\n' || c === '\r') && !inQuotes) {
+              if (cell.length || row.length) { row.push(cell); rows.push(row); row = []; cell = ''; }
+              continue;
+            }
+            cell += c;
+          }
+          if (cell.length || row.length) { row.push(cell); rows.push(row); }
+          return rows;
+        }
+        function toObjects(rows) {
+          if (!rows.length) return [];
+          const header = rows[0].map(h => h.trim());
+          return rows.slice(1)
+            .filter(r => r.some(v => (v ?? '').toString().trim().length))
+            .map(r => Object.fromEntries(header.map((h,i)=>[h,(r[i] ?? '').toString().trim()])));
+        }
+        function toNumberAR(v) {
+          const s = (v ?? '').toString().replace(/[^\d.,-]/g,'').replace(',', '.');
+          const n = Number(s); return Number.isFinite(n) ? n : 0;
+        }
+        function formatARS(n) { return n.toLocaleString('es-AR', { maximumFractionDigits: 0 }); }
 
-      // WA CTA
-      const waMsg = `Hola! Quiero el producto: ${p.name} ($${formatARS(p.price)})\n${location.href}`;
-      const waUrl = `https://wa.me/${PHONE}?text=${encodeURIComponent(waMsg)}`;
+        async function loadAll() {
+          const res = await fetch(CSV_URL + "&cb=" + Date.now(), { cache: "no-store" });
+          const text = await res.text();
+          const rows = parseCSV(text);
+          const objs = toObjects(rows);
+          return objs.map(p => ({
+            name: p.Producto || p.name || '',
+            price: toNumberAR(p.Precio_Venta || p.price),
+            stock: parseInt(p.Cantidad || p.stock || '0', 10) || 0,
+            img: p.img || p.ImageURL || PLACEHOLDER_IMG,
+            category: (p.category || p.categoria || '').toLowerCase(),
+            tags: p.tags || '',
+            desc: p.Descripcion || p.description || '',
+            slug: slugify(p.Producto || p.name || '')
+          }));
+        }
 
-      // Render
-      box.innerHTML = `
-        <article class="product-card" style="grid-column:1/-1; display:grid; grid-template-columns: 1fr 1fr; gap:1rem; align-items:start;">
-          <img src="${p.img}" alt="${p.name}" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px">
-          <div>
-            <h1 style="margin:0 0 .4rem">${p.name}</h1>
-            <p style="opacity:.7;margin:.25rem 0">${(p.category||'').toUpperCase()}</p>
-            <p class="badge" style="display:inline-block;margin:.5rem 0">$${formatARS(p.price)}</p>
-            ${p.desc ? `<p style="margin:1rem 0 1.25rem">${p.desc}</p>` : ''}
-            <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-              <a href="tienda.html" class="btn-mini">Volver a Tienda</a>
-              ${addBtnHTML}
-              <a href="${waUrl}" class="btn-mini" target="_blank" rel="noopener">Comprar por WhatsApp</a>
+        const params = new URLSearchParams(location.search);
+        const wanted = (params.get('slug') || '').toLowerCase();
+        log("slug param:", wanted);
+
+        const all = await loadAll();
+        log("loaded items:", all.length);
+
+        const p = all.find(x => x.slug === wanted);
+        log("matched product:", p);
+
+        const box = document.getElementById('product-details');
+
+        if (!wanted) {
+          box.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:#b54a64">Falta el parámetro ?slug=… en la URL.</p>`;
+          return;
+        }
+        if (!p) {
+          box.innerHTML = `<p style="grid-column:1/-1;text-align:center">Producto no encontrado. <a href="tienda.html">Volver a Tienda</a></p>`;
+          return;
+        }
+
+        document.title = `${p.name} • Adelie Glam`;
+
+        const waMsg = `Hola! Quiero el producto: ${p.name} ($${formatARS(p.price)})\n${location.href}`;
+        const waUrl = `https://wa.me/${PHONE}?text=${encodeURIComponent(waMsg)}`;
+
+        box.innerHTML = `
+          <article class="product-card" style="grid-column:1/-1; display:grid; grid-template-columns: 1fr 1fr; gap:1rem; align-items:start;">
+            <img src="${p.img}" alt="${p.name}" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px">
+            <div>
+              <h1 style="margin:0 0 .4rem">${p.name}</h1>
+              <p style="opacity:.7;margin:.25rem 0">${(p.category||'').toUpperCase()}</p>
+              <p class="badge" style="display:inline-block;margin:.5rem 0">$${formatARS(p.price)}</p>
+              ${p.desc ? `<p style="margin:1rem 0 1.25rem">${p.desc}</p>` : ''}
+              <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+                <a href="tienda.html" class="btn-mini">Volver a Tienda</a>
+                <a href="#" id="add-one" class="btn-mini">Agregar al carrito</a>
+                <a href="${waUrl}" class="btn-mini" target="_blank" rel="noopener">Comprar por WhatsApp</a>
+              </div>
             </div>
-          </div>
-        </article>
-      `;
+          </article>
+        `;
 
-      // mobile tweak
-      if (window.matchMedia("(max-width: 720px)").matches) {
-        const card = box.querySelector('.product-card');
-        card.style.gridTemplateColumns = '1fr';
-      }
+        if (window.matchMedia("(max-width: 720px)").matches) {
+          const card = box.querySelector('.product-card');
+          card.style.gridTemplateColumns = '1fr';
+        }
 
-      // Wire "Agregar al carrito"
-      document.getElementById('add-one')?.addEventListener('click', (e)=>{
-        e.preventDefault(); // important so it doesn't jump to top
-        window.AdelieCart?.addItem({ slug:p.slug, name:p.name, price:p.price, img:p.img }, 1);
-        window.AdelieCart?.openCart();
-      });
+        document.getElementById('add-one')?.addEventListener('click', (e)=>{
+          e.preventDefault();
+          window.AdelieCart?.addItem({ slug:p.slug, name:p.name, price:p.price, img:p.img }, 1);
+          window.AdelieCart?.openCart();
+        });
 
-      // Ensure the badge reflects current cart (in case cache delayed cart.js init)
-      if (window.AdelieCart?.readCart) {
-        const count = window.AdelieCart.readCart().reduce((s,x)=>s+x.qty,0);
-        const badge = document.getElementById('cart-count');
-        if (badge) badge.textContent = count;
+        // Update badge from localStorage
+        if (window.AdelieCart?.readCart) {
+          const count = window.AdelieCart.readCart().reduce((s,x)=>s+x.qty,0);
+          const badge = document.getElementById('cart-count');
+          if (badge) badge.textContent = count;
+        }
+      } catch (err) {
+        console.error(err);
+        const box = document.getElementById('product-details');
+        if (box) {
+          box.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:#b54a64">No pudimos cargar el producto. Revisá la consola del navegador para más detalles.</p>`;
+        }
       }
     })();
   </script>
