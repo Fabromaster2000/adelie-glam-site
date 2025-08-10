@@ -165,19 +165,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     if ($('#q'))  $('#q').addEventListener('input', debounce(() => applyFilters(all), 200));
     if ($('#cat')) $('#cat').addEventListener('change', () => applyFilters(all));
 
-    // ONE event delegation on the grid for "Agregar"
+    // ONE event delegation on the grid for all "Agregar" buttons
     const container = document.getElementById('grid') || document.getElementById('product-list');
     container?.addEventListener('click', (e) => {
-      const btn = e.target.closest('.add-to-cart');
-      if (!btn) return;
-      const item = {
+    const btn = e.target.closest('.add-to-cart');
+    if (!btn) return;
+    const item = {
         slug: btn.dataset.slug,
         name: btn.dataset.name,
         price: Number(btn.dataset.price || 0),
         img: btn.dataset.img
-      };
-      window.AdelieCart?.addItem(item, 1);
-      window.AdelieCart?.openCart();
+    };
+    window.AdelieCart?.addItem(item, 1);
+    window.AdelieCart?.openCart();
     });
 
   } catch (e) {

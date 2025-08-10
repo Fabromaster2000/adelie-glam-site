@@ -263,6 +263,18 @@ body {
   display:flex; flex-direction:column;
   border-left:1px solid #f0cdd7;
 }
+button.btn-mini{
+  text-decoration:none;
+  background:#ffd3e0;
+  color:var(--ink);
+  padding:.35rem .65rem;
+  border-radius:999px;
+  font-weight:700;
+  font-size:.85rem;
+  border:0;
+  cursor:pointer;
+}
+
 .cart-drawer.open{ transform:translateX(0); }
 .cart-head, .cart-foot{ padding:1rem; border-bottom:1px solid #f3e0e7; }
 .cart-head{ display:flex; justify-content:space-between; align-items:center; }

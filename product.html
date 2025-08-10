@@ -9,7 +9,7 @@
 <body>
 
   <header class="topbar">
-    <div class="brand">
+    <a href="index.html" class="brand"></a>
       <svg class="mini-logo" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
         <path fill-rule="evenodd" clip-rule="evenodd" d="M10 2a1 1 0 00-.894.553L7.382 6H3a1 1 0 00-.832 1.554l3 5A1 1 0 006 12h8a1 1 0 00.832-1.554l-3-5A1 1 0 0013 6h-4.382l-1.724-3.447A1 1 0 0010 2z" />
         <path d="M3 14a1 1 0 100 2h14a1 1 0 100-2H3z" />
@@ -50,13 +50,17 @@
 
   <footer class="footer">© 2025 Adelie Glam — Hecho con ♥ en Buenos Aires</footer>
 
+<script defer src="whatsapp.js"></script>
+<script defer src="cart.js"></script>
+
   <!-- Page script: loads the CSV, renders one product, adds "Agregar" + WA CTA -->
   <script>
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRGncMkuJIgCWEwgnBNOA3jCdCt4uz3ENDfW1dpC8Jmj_kbfompeOHyipVojo1tnV56WXCnER-Smopf/pub?output=csv";
     const PLACEHOLDER_IMG = "img/products/placeholder.jpg";
     const PHONE = "5491159498241"; // <-- your WhatsApp number
 
-    const addBtnHTML = `<button id="add-one" class="btn-mini">Agregar al carrito</button>`;
+    const addBtnHTML = `<a href="#" id="add-one" class="btn-mini">Agregar al carrito</a>`;
+
 
     function slugify(str = '') {
       return str
@@ -163,7 +167,6 @@
   </script>
 
   <!-- Site-wide helpers LAST (so DOM exists) -->
-  <script defer src="whatsapp.js"></script>
-  <script defer src="cart.js"></script>
+
 </body>
 </html>
