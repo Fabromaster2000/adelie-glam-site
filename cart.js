@@ -146,13 +146,24 @@ function closeCart(){ document.getElementById('cart-drawer')?.classList.remove('
 // Send the HTML email via EmailJS (to store + optionally to customer)
 function sendCartEmail(){
   const items = readCart();
-  if(!items.length){ alert('Tu carrito está vacío.'); return; }
+  if(!items.length){
+    alert('Tu carrito está vacío.');
+    return;
+  }
 
-  // Read customer fields (make sure the inputs exist in the cart drawer)
-  const name  = (document.getElementById('cust-name')?.value || '').trim();
-  const phone = (document.getElementById('cust-phone')?.value || '').trim();
-  const email = (document.getElementById('cust-email')?.value || '').trim();
+  // Read + validate customer fields
+  const nameEl  = document.getElementById('cust-name');
+  const phoneEl = document.getElementById('cust-phone');
+  const emailEl = document.getElementById('cust-email');
+
+  const name  = (nameEl?.value  || '').trim();
+  const phone = (phoneEl?.value || '').trim();
+  const email = (emailEl?.value || '').trim();
+
   const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  if(!name){ alert('Por favor ingresá tu nombre.'); nameEl?.focus(); return; }
+  if(!phone){ alert('Por favor ingresá tu teléfono.'); phoneEl?.focus(); return; }
+  if(!isEmail){ alert('Por favor ingresá un email válido.'); emailEl?.focus(); return; }
 
   const common = {
     subject: `Pedido Adelie Glam (${new Date().toLocaleDateString('es-AR')})`,
@@ -168,29 +179,25 @@ function sendCartEmail(){
   const sendToStore = emailjs.send(
     EMAILJS_SERVICE_ID,
     EMAILJS_TEMPLATE_ID,
-    { ...common, to_email: EMAIL_TO } // goes to your store inbox
+    { ...common, to_email: EMAIL_TO }
   );
 
-  const sendToCustomer = isEmail
-    ? emailjs.send(
-        EMAILJS_SERVICE_ID,
-        EMAILJS_TEMPLATE_ID,
-        { ...common, to_email: email } // copy to the customer
-      )
-    : Promise.resolve(); // skip if invalid customer email
+  const sendToCustomer = emailjs.send(
+    EMAILJS_SERVICE_ID,
+    EMAILJS_TEMPLATE_ID,
+    { ...common, to_email: email }
+  );
 
   Promise.all([sendToStore, sendToCustomer])
     .then(() => {
-      const msg = isEmail
-        ? `¡Listo! Enviamos el resumen:\n• A la tienda: ${EMAIL_TO}\n• Al cliente: ${email}\nRevisá tu bandeja (y Spam/Promociones).`
-        : `¡Listo! Enviamos el resumen a la tienda: ${EMAIL_TO}.\n(No se envió al cliente porque el email no parece válido.)`;
-      alert(msg);
+      alert(`¡Listo! Enviamos el resumen:\n• A la tienda: ${EMAIL_TO}\n• Al cliente: ${email}\nRevisá tu bandeja (y Spam/Promociones).`);
     })
     .catch(err => {
       console.error('[EmailJS] error', err);
       alert('No pudimos enviar el email ahora. Probá de nuevo más tarde.');
     });
 }
+
 
 document.addEventListener('DOMContentLoaded', () => {
   updateBadge();
@@ -215,10 +222,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Email triggers
-  document.getElementById('email-link')?.addEventListener('click', (e)=>{
-    e.preventDefault();
-    sendCartEmail();
-  });
   document.getElementById('cart-email')?.addEventListener('click', (e)=>{
     e.preventDefault();
     sendCartEmail();
