@@ -170,23 +170,32 @@ function sendCartEmail(){
     order_date: new Date().toLocaleDateString('es-AR'),
     page_url: window.location.href,
     logo_url: LOGO_URL,
-    cart_html: buildCartHtml(items),
+    cart_html: buildCartHtml(items),   // <-- must match {{{cart_html}}} in template
     customer_name:  name,
     customer_phone: phone,
-    customer_email: email
+    customer_email: email,
+    // DEBUG: send everything as JSON so we can see it arrive in the email
+    debug_json: JSON.stringify({
+      subject: `Pedido Adelie Glam (${new Date().toLocaleDateString('es-AR')})`,
+      order_date: new Date().toLocaleDateString('es-AR'),
+      page_url: window.location.href,
+      logo_url: LOGO_URL,
+      customer_name:  name,
+      customer_phone: phone,
+      customer_email: email,
+      items
+    }, null, 2)
   };
 
-  const sendToStore = emailjs.send(
-    EMAILJS_SERVICE_ID,
-    EMAILJS_TEMPLATE_ID,
-    { ...common, to_email: EMAIL_TO }
-  );
+  const payloadStore    = { ...common, to_email: EMAIL_TO };
+  const payloadCustomer = { ...common, to_email: email };
 
-  const sendToCustomer = emailjs.send(
-    EMAILJS_SERVICE_ID,
-    EMAILJS_TEMPLATE_ID,
-    { ...common, to_email: email }
-  );
+  // Log to the browser console so we confirm what's being sent
+  console.log('[EmailJS] payload to store:', payloadStore);
+  console.log('[EmailJS] payload to customer:', payloadCustomer);
+
+  const sendToStore = emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, payloadStore);
+  const sendToCustomer = emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, payloadCustomer);
 
   Promise.all([sendToStore, sendToCustomer])
     .then(() => {
