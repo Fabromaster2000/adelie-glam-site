@@ -1,7 +1,12 @@
 // cart.js
 const CART_KEY = 'adelie_cart_v1';
-const PHONE = '5491159498241';             // WhatsApp number (no +, no spaces)
-const EMAIL_TO = 'adeliee.glam@gmail.com';  // <-- change if needed
+const PHONE = '5491159498241';
+const EMAIL_TO = 'adeliee.glam@gmail.com';
+
+// EmailJS config
+const EMAILJS_SERVICE_ID = 'service_v0rn6d7';         // EXACT service id from EmailJS
+const EMAILJS_TEMPLATE_ID = 'template_54haqal';       // your template id
+const LOGO_URL = 'https://fabromaster2000.github.io/adelie-glam-site/img/adelie-main-logo.jpg';
 
 const peso = n => Number(n || 0).toLocaleString('es-AR', { maximumFractionDigits: 0 });
 
@@ -46,28 +51,51 @@ function buildWaUrl(){
   return `https://wa.me/${PHONE}?text=${encodeURIComponent(msg)}`;
 }
 
-// ----- Email helpers -----
-function messageForEmail(items){
-  const lines = [];
-  lines.push('Hola Adelie Glam, quiero confirmar este pedido:');
-  items.forEach(x => lines.push(`• ${x.name} x${x.qty} — $${peso(x.price)} c/u`));
-  lines.push('');
-  lines.push(`Total: $${peso(total(items))}`);
-  lines.push('');
-  lines.push('Mis datos:');
-  lines.push('Nombre: ');
-  lines.push('Teléfono: ');
-  lines.push('Dirección (si aplica): ');
-  lines.push('');
-  lines.push('Enlace del carrito/página:');
-  lines.push(window.location.href);
-  return lines.join('\n');
-}
-function buildEmailHref(){
-  const items = readCart();
-  const subject = `Pedido Adelie Glam (${new Date().toLocaleDateString('es-AR')})`;
-  const body = messageForEmail(items);
-  return `mailto:${encodeURIComponent(EMAIL_TO)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+// Build HTML block for EmailJS template {{{cart_html}}}
+function buildCartHtml(items){
+  const fmt = n => Number(n||0).toLocaleString('es-AR', { maximumFractionDigits: 0 });
+  const rows = items.map(x => {
+    const sub = (Number(x.price)||0) * (Number(x.qty)||0);
+    return `
+      <tr>
+        <td style="padding:8px 10px;border-bottom:1px solid #f2d9e2;">${x.name}</td>
+        <td style="padding:8px 10px;border-bottom:1px solid #f2d9e2;text-align:center;">${x.qty}</td>
+        <td style="padding:8px 10px;border-bottom:1px solid #f2d9e2;text-align:right;">$${fmt(x.price)}</td>
+        <td style="padding:8px 10px;border-bottom:1px solid #f2d9e2;text-align:right;">$${fmt(sub)}</td>
+      </tr>
+    `;
+  }).join('');
+
+  const tot = items.reduce((s,x)=>s + (Number(x.price)||0)*(Number(x.qty)||0), 0);
+
+  return `
+    <div style="padding:0 20px 20px;">
+      <table width="100%" cellpadding="0" cellspacing="0" role="presentation"
+             style="border-collapse:collapse;max-width:620px;margin:0 auto;border:1px solid #f6e6ec;border-radius:10px;overflow:hidden;">
+        <thead>
+          <tr style="background:#FBEAF1;color:#7A4455;">
+            <th align="left"  style="padding:10px 12px;font-weight:700;">Producto</th>
+            <th align="center"style="padding:10px 12px;font-weight:700;">Cant.</th>
+            <th align="right" style="padding:10px 12px;font-weight:700;">Precio</th>
+            <th align="right" style="padding:10px 12px;font-weight:700;">Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3" align="right" style="padding:12px;font-weight:700;color:#B54A64;">Total</td>
+            <td align="right" style="padding:12px;font-weight:800;color:#B54A64;">$${fmt(tot)}</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div style="max-width:620px;margin:14px auto 0;color:#666;font-size:14px;">
+        <p><strong>Datos del cliente</strong> (completar):</p>
+        <p>Nombre: ____________<br>Teléfono: ____________<br>Dirección (si aplica): ____________</p>
+        <p style="margin-top:10px;">Página: <a href="${location.href}" style="color:#B54A64;">${location.href}</a></p>
+      </div>
+    </div>
+  `;
 }
 
 function renderCart(){
@@ -105,9 +133,9 @@ function renderCart(){
   if (totalEl) totalEl.textContent = `$${peso(total(items))}`;
   if (checkout) checkout.href = buildWaUrl();
 
-  // Set email checkout link each time we render
+  // (Optional) update the email button href; we intercept clicks anyway
   const emailBtn = document.getElementById('cart-email');
-  if (emailBtn) emailBtn.href = buildEmailHref();
+  if (emailBtn) emailBtn.href = '#';
 
   updateBadge();
 }
@@ -115,6 +143,29 @@ function renderCart(){
 // Drawer controls
 function openCart(){ document.getElementById('cart-drawer')?.classList.add('open'); renderCart(); }
 function closeCart(){ document.getElementById('cart-drawer')?.classList.remove('open'); }
+
+// Send the HTML email via EmailJS
+function sendCartEmail(){
+  const items = readCart();
+  if(!items.length){ alert('Tu carrito está vacío.'); return; }
+
+  const payload = {
+    to_email: EMAIL_TO,
+    subject: `Pedido Adelie Glam (${new Date().toLocaleDateString('es-AR')})`,
+    order_date: new Date().toLocaleDateString('es-AR'),
+    page_url: window.location.href,
+    logo_url: LOGO_URL,
+    cart_html: buildCartHtml(items)
+  };
+
+  // emailjs SDK must be loaded in the page and initialized with your public key
+  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, payload)
+    .then(() => alert('¡Listo! Enviamos el resumen por email.'))
+    .catch(err => {
+      console.error('[EmailJS] error', err);
+      alert('No pudimos enviar el email ahora. Probá de nuevo más tarde.');
+    });
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   updateBadge();
@@ -138,10 +189,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (act === 'rm')  removeItem(slug);
   });
 
-  // Header email icon triggers email with current cart
-  document.getElementById('email-link')?.addEventListener('click', (e) => {
+  // Email triggers
+  document.getElementById('email-link')?.addEventListener('click', (e)=>{
     e.preventDefault();
-    window.location.href = buildEmailHref();
+    sendCartEmail();
+  });
+  document.getElementById('cart-email')?.addEventListener('click', (e)=>{
+    e.preventDefault();
+    sendCartEmail();
   });
 });
 

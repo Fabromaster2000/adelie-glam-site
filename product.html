@@ -65,7 +65,7 @@
   <footer class="footer">© 2025 Adelie Glam — Hecho con ♥ en Buenos Aires</footer>
 
   <!-- Load cart FIRST so AdelieCart exists -->
-  <script src="cart.js?v=6"></script>
+  <script src="cart.js?v=12"></script>
   <script defer src="whatsapp.js?v=2"></script>
 
   <!-- Inline page script -->
@@ -199,5 +199,10 @@
       }
     })();
   </script>
+  <!-- EmailJS SDK + init -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+  emailjs.init('QhF5zexxp_jqNkCUI'); // your PUBLIC key
+</script>
 </body>
 </html>
