@@ -16,8 +16,7 @@ function writeCart(items){ localStorage.setItem(CART_KEY, JSON.stringify(items))
 function addItem({slug,name,price,img}, qty=1){
   const items = readCart();
   const i = items.findIndex(x => x.slug === slug);
-  if (i >= 0) items[i].qty += qty;
-  else items.push({ slug, name, price:+price || 0, img, qty });
+  if (i >= 0) items[i].qty += qty; else items.push({ slug, name, price:+price || 0, img, qty });
   writeCart(items); renderCart();
 }
 function setQty(slug, qty){
@@ -144,23 +143,49 @@ function renderCart(){
 function openCart(){ document.getElementById('cart-drawer')?.classList.add('open'); renderCart(); }
 function closeCart(){ document.getElementById('cart-drawer')?.classList.remove('open'); }
 
-// Send the HTML email via EmailJS
+// Send the HTML email via EmailJS (to store + optionally to customer)
 function sendCartEmail(){
   const items = readCart();
   if(!items.length){ alert('Tu carrito está vacío.'); return; }
 
-  const payload = {
-    to_email: EMAIL_TO,
+  // Read customer fields (make sure the inputs exist in the cart drawer)
+  const name  = (document.getElementById('cust-name')?.value || '').trim();
+  const phone = (document.getElementById('cust-phone')?.value || '').trim();
+  const email = (document.getElementById('cust-email')?.value || '').trim();
+  const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  const common = {
     subject: `Pedido Adelie Glam (${new Date().toLocaleDateString('es-AR')})`,
     order_date: new Date().toLocaleDateString('es-AR'),
     page_url: window.location.href,
     logo_url: LOGO_URL,
-    cart_html: buildCartHtml(items)
+    cart_html: buildCartHtml(items),
+    customer_name:  name,
+    customer_phone: phone,
+    customer_email: email
   };
 
-  // emailjs SDK must be loaded in the page and initialized with your public key
-  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, payload)
-    .then(() => alert('¡Listo! Enviamos el resumen por email.'))
+  const sendToStore = emailjs.send(
+    EMAILJS_SERVICE_ID,
+    EMAILJS_TEMPLATE_ID,
+    { ...common, to_email: EMAIL_TO } // goes to your store inbox
+  );
+
+  const sendToCustomer = isEmail
+    ? emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        { ...common, to_email: email } // copy to the customer
+      )
+    : Promise.resolve(); // skip if invalid customer email
+
+  Promise.all([sendToStore, sendToCustomer])
+    .then(() => {
+      const msg = isEmail
+        ? `¡Listo! Enviamos el resumen:\n• A la tienda: ${EMAIL_TO}\n• Al cliente: ${email}\nRevisá tu bandeja (y Spam/Promociones).`
+        : `¡Listo! Enviamos el resumen a la tienda: ${EMAIL_TO}.\n(No se envió al cliente porque el email no parece válido.)`;
+      alert(msg);
+    })
     .catch(err => {
       console.error('[EmailJS] error', err);
       alert('No pudimos enviar el email ahora. Probá de nuevo más tarde.');

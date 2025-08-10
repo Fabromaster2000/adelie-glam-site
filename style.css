@@ -286,4 +286,5 @@ button.btn-mini{
 .qty{ display:flex; align-items:center; gap:.35rem; }
 .qty button{ width:26px; height:26px; border:1px solid #f0cdd7; background:#fff; border-radius:6px; }
 .cart-total{ font-weight:800; color:#B54A64; }
-.cart-actions{ display:flex; gap:.5rem; justify-content:flex-end; }
+.cart-actions { display:flex; gap:.5rem; flex-wrap:wrap; }
+

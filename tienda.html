@@ -46,22 +46,35 @@
     🛒 <span id="cart-count">0</span>
   </a>
 
+  
   <!-- Cart drawer -->
   <aside id="cart-drawer" class="cart-drawer" aria-hidden="true">
     <div class="cart-head">
       <strong>Tu carrito</strong>
       <button id="cart-close" aria-label="Cerrar">×</button>
     </div>
+
     <div id="cart-items" class="cart-items"></div>
+
+    <!-- Customer details (NEW) -->
+    <div style="padding:12px 1rem; border-top:1px solid #f0cdd7;">
+      <div style="display:grid; gap:.5rem;">
+        <input id="cust-name"  type="text" placeholder="Tu nombre"   style="padding:.55rem .7rem;border:1px solid #e4c8d2;border-radius:8px;">
+        <input id="cust-phone" type="tel"  placeholder="Tu teléfono" style="padding:.55rem .7rem;border:1px solid #e4c8d2;border-radius:8px;">
+        <input id="cust-email" type="email" placeholder="Tu email"    style="padding:.55rem .7rem;border:1px solid #e4c8d2;border-radius:8px;">
+      </div>
+    </div>
+
     <div class="cart-foot">
       <div class="cart-total">Total: <span id="cart-total">$0</span></div>
       <div class="cart-actions">
         <button id="cart-clear" class="btn-mini">Vaciar</button>
-        <a id="cart-email" class="btn-mini" target="_blank" rel="noopener">Checkout por Email</a>
+        <a id="cart-email" class="btn-mini" href="#" >Checkout por Email</a>
         <a id="cart-checkout" class="btn-mini" target="_blank" rel="noopener">Checkout por WhatsApp</a>
       </div>
     </div>
   </aside>
+
 
   <!-- Page header -->
   <section class="page-hero">
@@ -88,7 +101,7 @@
 
   <!-- Scripts (at the end) -->
   <script defer src="products.js?v=5"></script>
-  <script defer src="cart.js?v=12"></script>
+  <script defer src="cart.js?v=13"></script>
   <script defer src="whatsapp.js?v=2"></script>
   <!-- EmailJS SDK + init -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
